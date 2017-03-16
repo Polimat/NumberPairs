@@ -36,6 +36,7 @@ namespace NumberPairs
         private static void PrintPairs(ICollection<int> numbers, int x)
         {
             //Поиск пар
+            if (numbers.Count == 0) return;
             var tempList = new Collection<int>();
             do
             {
@@ -44,14 +45,22 @@ namespace NumberPairs
                 int second = 0;
                 foreach (var number in numbers)
                 {
+                    if (first == number) continue;
                     if (added && second == number) continue;
-                    if (!added && first + number == x)
+                    try
                     {
-                        second = number;
-                        Console.WriteLine($"{first} {second}");
-                        added = true;
+                        if (!added && first + number == x)
+                        {
+                            second = number;
+                            Console.WriteLine($"{first} {second}");
+                            added = true;
+                            continue;
+                        }
                     }
-                    if (first == number || second == number) continue;
+                    catch (ArithmeticException ex)
+                    {
+                        
+                    }
                     tempList.Add(number);
                 }
                 numbers = tempList;
