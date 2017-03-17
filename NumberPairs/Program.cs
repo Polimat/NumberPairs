@@ -1,23 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NumberPairs
 {
     class Program
     {
-        
-
         static void Main(string[] args)
         {
             // Инициализация
-            ICollection<int> numbers = new Collection<int>();
+            Collection<int> numbers = new Collection<int>();
             var rnd = new Random();
-            for (int i = 0; i < 30; i++)
+            for (int i = 0; i < 10000; i++)
             {
                 var number = rnd.Next(-100, 100);
                 Console.Write(number + " ");
@@ -29,43 +23,72 @@ namespace NumberPairs
 
             Console.WriteLine("Пары значений");
             //Вывод пар
-            PrintPairs(numbers, x);
+            PrintPairsInSorted(numbers, x);
             Console.ReadKey();
         }
 
-        private static void PrintPairs(ICollection<int> numbers, int x)
+        private static void PrintPairsInSorted(Collection<int> numbers, int x)
         {
-            //Поиск пар
-            if (numbers.Count == 0) return;
-            var tempList = new Collection<int>();
-            do
+            if (numbers.Count <= 1) return;
+            Sort(numbers, 0, numbers.Count - 1);
+            var i = 0;
+            while(true)
             {
-                var first = numbers.ElementAt(0);
-                var added = false;
-                int second = 0;
-                foreach (var number in numbers)
+                // Если последний элемент коллекции, то выходим. Смысла искать нет.
+                if (i > numbers.Count - 2) break;
+                var first = numbers.ElementAt(i);
+                var second = x - first;
+                var index = SearchIndexInSorted(numbers, i+1, numbers.Count - 1, second);
+                if (index >= 0)
                 {
-                    if (first == number) continue;
-                    if (added && second == number) continue;
-                    try
-                    {
-                        if (!added && first + number == x)
-                        {
-                            second = number;
-                            Console.WriteLine($"{first} {second}");
-                            added = true;
-                            continue;
-                        }
-                    }
-                    catch (ArithmeticException ex)
-                    {
-                        
-                    }
-                    tempList.Add(number);
+                    Console.WriteLine($"{first} {second}");
                 }
-                numbers = tempList;
-                tempList = new Collection<int>();
-            } while (numbers.Count > 1);
+                i++;
+            } 
+        }
+
+        private static int SearchIndexInSorted(Collection<int> collection, int start, int end, int x)
+        {
+            if (end == start || end-start == 1)
+            {
+                if (collection.ElementAt(start) == x) return start;
+                if (collection.ElementAt(end) == x) return end;
+                return -1;
+            }
+            int index = (end+start)/2;
+            var element = collection.ElementAt(index);
+            if (element == x) return index;
+            if (element < x) return SearchIndexInSorted(collection, index + 1, end, x);
+            if (element > x) return SearchIndexInSorted(collection, start, index - 1, x);
+            return -1;
+        }
+
+        private static void Sort(Collection<int> collection, int l, int r)
+        {
+            if (collection.Count <= 1) return;
+            int temp;
+            int x = collection.ElementAt(l + (r - l) / 2);
+            int i = l;
+            int j = r;
+            
+            while (i <= j)
+            {
+                while (collection[i] < x) i++;
+                while (collection[j] > x) j--;
+                if (i <= j)
+                {
+                    temp = collection[i];
+                    collection[i] = collection[j];
+                    collection[j] = temp;
+                    i++;
+                    j--;
+                }
+            }
+            if (i < r)
+                Sort(collection, i, r);
+
+            if (l < j)
+                Sort(collection, l, j);
         }
 
 
